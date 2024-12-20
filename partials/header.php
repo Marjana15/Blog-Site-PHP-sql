@@ -73,7 +73,7 @@ if ($categoriesResult) {
                     </ul>
                 </li>
                 <?php else : ?>
-                    <li><a href="<?= ROOT_URL ?>signin.php">SignIn</a></li>
+                    <li><a href="<?= ROOT_URL ?>signin.php">Sign in | Sign up</a></li>
                 <?php endif ?>
             </ul>
             
