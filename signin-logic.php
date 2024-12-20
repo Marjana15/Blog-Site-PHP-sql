@@ -1,63 +1,63 @@
 <?php
-require "config/database.php";
+require "./config/database.php";
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-if(isset($_POST['submit'])){
-    // getting input
-    $username_email = filter_var($_POST['username_email'] , FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-    $password = filter_var(($_POST['password']), FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+if (isset($_POST['submit'])) {
+    // Sanitize and validate inputs
+    $username_email = filter_var($_POST['username_email'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    $password = $_POST['password'];
 
-    if(!$username_email){
-        $_SESSION['signin'] = 'Username or Email is Incorrect';
+    // Input validation
+    if (!$username_email) {
+        $_SESSION['signin'] = 'Please enter your username or email.';
+    } elseif (!$password) {
+        $_SESSION['signin'] = 'Password is required.';
+    } else {
+        // Prepare a secure query to fetch the user
+        $stmt = $connection->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
+        $stmt->bind_param("ss", $username_email, $username_email);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    }
-    elseif(!$password){
-        $_SESSION['signin'] = 'Password required';
- 
-    }else{  
-        // fetch user from database
-        $fetch_user_query = "SELECT * FROM users WHERE username = '$username_email' OR email = '$username_email'";
-        $fetch_user_result = mysqli_query($connection, $fetch_user_query);
-
-        if(mysqli_num_rows($fetch_user_result) == 1){
-            //convert the record into assoc array
-            $user_record=mysqli_fetch_assoc($fetch_user_result);
+        // Check if the user exists
+        if ($result->num_rows === 1) {
+            // Fetch user data
+            $user_record = $result->fetch_assoc();
             $db_password = $user_record['password'];
 
-            // compare form password with database password
-            if(password_verify($password,$db_password)){
-
-                // set session for access control
+            // Verify the password
+            if (password_verify($password, $db_password)) {
+                // Set session variables for access control
                 $_SESSION['user-id'] = $user_record['id'];
                 $_SESSION['signin-success'] = "User successfully logged in";
 
-                //set session if user is  admin
-                if($user_record['is_admin']==1){
+                // Check if the user is an admin
+                if ($user_record['is_admin'] == 1) {
                     $_SESSION['user_is_admin'] = true;
-
                 }
-                //log in user
-                header('location: ' . ROOT_URL . 'admin/index.php');
-                
-            }else{
-                $_SESSION['signin'] = "Please check your input";
+
+                // Redirect to the admin dashboard
+                header('Location: ' . ROOT_URL . 'admin/index.php');
+                exit();
+            } else {
+                $_SESSION['signin'] = 'Invalid password.';
             }
-        }else{
-            $a = mysqli_num_rows($fetch_user_result);
-            echo mysqli_num_rows($fetch_user_result);
-            $_SESSION['signin'] = "User Not found";
+        } else {
+            $_SESSION['signin'] = 'User not found.';
         }
     }
 
-    //if any problem, redirect back to signin page
-    if(isset($_SESSION['signin'])){
+    // Redirect back to the signin page with error
+    if (isset($_SESSION['signin'])) {
         $_SESSION['signin-data'] = $_POST;
-        header('location: ' . ROOT_URL . 'signin.php');
-        die();
+        header('Location: ' . ROOT_URL . 'signin.php');
+        exit();
     }
-
-}else{
-    header('location: ' . ROOT_URL . "signin.php");
-    die();
+} else {
+    // Redirect to the signin page if the form is not submitted
+    header('Location: ' . ROOT_URL . 'signin.php');
+    exit();
 }
-// error_log();

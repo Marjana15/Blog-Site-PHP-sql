@@ -1,7 +1,8 @@
 <?php
+session_start();
 require "config/database.php";
 
-if (isset($_POST['submit'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     $author_id = $_SESSION['user-id'];
     $title = filter_var($_POST['title'], FILTER_SANITIZE_STRING);
     $body = $_POST['body']; // Allow raw HTML from Quill editor
@@ -9,72 +10,94 @@ if (isset($_POST['submit'])) {
     $is_featured = isset($_POST['is_featured']) ? 1 : 0;
     $thumbnail = $_FILES['thumbnail'];
 
-    // Validate form inputs
-    if (!$title) {
-        $_SESSION['add-post'] = "Enter post title.";
-    } elseif (!$category_id) {
-        $_SESSION['add-post'] = "Select post category.";
-    } elseif (!$body) {
-        $_SESSION['add-post'] = "Enter post body.";
-    } elseif (!$thumbnail['name']) {
-        $_SESSION['add-post'] = "Choose post thumbnail.";
-    } else {
-        // Handle thumbnail upload
-        $time = time(); // Unique name for the image
-        $thumbnail_name = $time . "_" . $thumbnail['name'];
-        $thumbnail_tmp_name = $thumbnail['tmp_name'];
-        $thumbnail_destination_path = "../images/" . $thumbnail_name;
+    // Initialize error array
+    $errors = [];
 
-        // Validate thumbnail file type
+    // Validate inputs
+    if (!$title) {
+        $errors[] = "Enter post title.";
+    }
+    if (!$category_id) {
+        $errors[] = "Select post category.";
+    }
+    if (!$body) {
+        $errors[] = "Enter post body.";
+    }
+    if (!$thumbnail['name']) {
+        $errors[] = "Choose post thumbnail.";
+    }
+
+    // Handle thumbnail upload if no validation errors
+    $thumbnail_url = null;
+    if (empty($errors)) {
+        // Validate thumbnail file type and size
         $allowed_files = ['jpg', 'png', 'jpeg'];
-        $extension = strtolower(pathinfo($thumbnail_name, PATHINFO_EXTENSION));
-        if (in_array($extension, $allowed_files)) {
-            // Validate thumbnail file size (< 2MB)
-            if ($thumbnail['size'] < 2000000) {
-                // Move the uploaded file
-                if (!move_uploaded_file($thumbnail_tmp_name, $thumbnail_destination_path)) {
-                    $_SESSION['add-post'] = "Failed to upload thumbnail.";
-                }
-            } else {
-                $_SESSION['add-post'] = "File size too big. Should be less than 2MB.";
-            }
+        $extension = strtolower(pathinfo($thumbnail['name'], PATHINFO_EXTENSION));
+        if (!in_array($extension, $allowed_files)) {
+            $errors[] = "File must be in JPG, PNG, or JPEG format.";
+        } elseif ($thumbnail['size'] >= 2000000) { // 2MB limit
+            $errors[] = "File size too big. Should be less than 2MB.";
         } else {
-            $_SESSION['add-post'] = "File must be in JPG, PNG, or JPEG format.";
+            // Upload image to ImgBB using cURL
+            $thumbnail_tmp_name = $thumbnail['tmp_name'];
+            $imgbb_api_key = "caadf7e83479d331c6910900a8a4f72d"; // Replace with your ImgBB API key
+            $imgbb_upload_url = "https://api.imgbb.com/1/upload";
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $imgbb_upload_url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, [
+                'key' => $imgbb_api_key,
+                'image' => new CURLFile($thumbnail_tmp_name)
+            ]);
+
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $response_data = json_decode($response, true);
+
+            if ($response_data && isset($response_data['data']['url'])) {
+                $thumbnail_url = $response_data['data']['url'];
+            } else {
+                $errors[] = "Failed to upload thumbnail to ImgBB.";
+            }
         }
     }
 
-    // Redirect back if any validation error occurs
-    if (isset($_SESSION['add-post'])) {
+    // Redirect back with errors if validation fails
+    if (!empty($errors)) {
+        $_SESSION['add-post-errors'] = $errors;
         $_SESSION['add-post-data'] = $_POST; // Preserve form data
-        header('location: ' . ROOT_URL . 'admin/add-post.php');
+        header('Location: ' . ROOT_URL . 'admin/add-post.php');
+        exit();
+    }
+
+    // Reset all featured posts if this post is featured
+    if ($is_featured) {
+        $zero_all_is_featured_query = "UPDATE posts SET is_featured = 0";
+        mysqli_query($connection, $zero_all_is_featured_query);
+    }
+
+    // Insert the post into the database using prepared statements
+    $query = "INSERT INTO posts (title, body, thumbnail, category_id, author_id, is_featured) 
+              VALUES (?, ?, ?, ?, ?, ?)";
+    $stmt = mysqli_prepare($connection, $query);
+    mysqli_stmt_bind_param($stmt, "ssssii", $title, $body, $thumbnail_url, $category_id, $author_id, $is_featured);
+    $result = mysqli_stmt_execute($stmt);
+
+    if ($result) {
+        $_SESSION['add-post-success'] = "New post added successfully.";
+        header("Location: " . ROOT_URL . 'admin/index.php');
         exit();
     } else {
-        // If the post is featured, reset all others to not featured
-        if ($is_featured == 1) {
-            $zero_all_is_featured_query = "UPDATE posts SET is_featured = 0";
-            mysqli_query($connection, $zero_all_is_featured_query);
-        }
-
-        // Insert the post into the database using prepared statements
-        $query = "INSERT INTO posts (title, body, thumbnail, category_id, author_id, is_featured) 
-                  VALUES (?, ?, ?, ?, ?, ?)";
-        $stmt = mysqli_prepare($connection, $query);
-        mysqli_stmt_bind_param($stmt, "ssssii", $title, $body, $thumbnail_name, $category_id, $author_id, $is_featured);
-        $result = mysqli_stmt_execute($stmt);
-
-        if (!$result) {
-            $_SESSION['add-post'] = "Failed to add post: " . mysqli_error($connection);
-            header("location: " . ROOT_URL . 'admin/add-post.php');
-            exit();
-        } else {
-            $_SESSION['add-post-success'] = "New post added successfully.";
-            header("location: " . ROOT_URL . 'admin/index.php');
-            exit();
-        }
+        $_SESSION['add-post'] = "Failed to add post: " . mysqli_stmt_error($stmt);
+        header("Location: " . ROOT_URL . 'admin/add-post.php');
+        exit();
     }
 }
 
-// Redirect to admin dashboard if no POST request is made
-header("location: " . ROOT_URL . 'admin/index.php');
+// Redirect to admin dashboard if accessed directly
+header("Location: " . ROOT_URL . 'admin/index.php');
 exit();
 ?>

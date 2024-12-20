@@ -42,3 +42,5 @@ if (window.innerWidth <= 600)
   } catch (error) {
     //   console.error("Error occurred in sidebar functionality:", error);
   }
+
+  

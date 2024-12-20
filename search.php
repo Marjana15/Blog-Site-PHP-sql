@@ -33,7 +33,6 @@ if((isset($_GET['search'])) && isset($_GET['submit'])){
         $author_query="SELECT * FROM users WHERE id=$author_id";
         $author_result=mysqli_query($connection,$author_query);
         $author=mysqli_fetch_assoc($author_result);
-                    
         ?>
             <a href="category-posts.php?id=<?=$post['category_id']?>" class="category__button"><?=$category['title']?></a>
             <h3 class="post__title"><a href="post.php?id=<?=$post["id"]?>" >
@@ -54,7 +53,6 @@ if((isset($_GET['search'])) && isset($_GET['submit'])){
                 </div>
             </div>
         </div>
-
     </article>
     <?php endwhile ?>
 

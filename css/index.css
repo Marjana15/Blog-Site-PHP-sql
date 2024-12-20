@@ -1,0 +1,197 @@
+/* Color Variables */
+:root {
+    --color-primary-variant: #353535;
+    --color-red: #da0f3f;
+    --color-red-light: hsl(346, 87%, 46%, 15%);
+    --color-green: #00c476;
+    --color-green-light: hsl(156, 100%, 38%, 15%);
+    --color-gray-200: rgba(242, 242, 254, 0.7);
+    --color-white: #f2f2fe;
+    --color-bg: #272727;
+    --color-black: #000000;
+    --color-gray-300: #b3b3b3;
+    --color-gray-500: #808080;
+    --color-gray-700: #4d4d4d;
+    --color-gray-900: #2b2b2b;
+    --color-primary: #007bff; /* Primary blue */
+    --color-primary-light: #5a9cff; /* Light blue */
+    --color-secondary: #ff5733; /* Secondary orange */
+    --color-success: #28a745; /* Green for success */
+    --color-warning: #ffc107; /* Yellow for warning */
+    --color-danger: #dc3545; /* Red for danger */
+    --color-info: #17a2b8; /* Cyan for info */
+  
+    --transition: all 0.3s ease-in-out;
+    --card-border-radius-2: 8px;
+}
+
+/* Main Content Layout */
+.main-content__container {
+    display: flex;
+    gap: 2rem;
+    margin-top: 5rem;
+    margin-bottom: 5rem;
+}
+
+/* Posts Wrapper Grid */
+.posts__wrapper {
+    flex: 2; /* Occupy 3/4 of the space */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Two posts per row */
+    gap: 2rem; /* Space between posts */
+}
+
+
+/* Thumbnail Styling */
+.post__thumbnail {
+    height: 200px;
+    overflow: hidden;
+    border-radius: var(--card-border-radius-2);
+    margin-bottom: 1rem;
+    background: var(--color-gray-700);
+}
+
+.post__thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Post Info Styling */
+.post__info h2 {
+    font-size: 1.4rem;
+    color: var(--color-white);
+    margin-bottom: 0.5rem;
+}
+
+.post__info p {
+    color: var(--color-gray-300);
+    font-size: 1rem;
+}
+
+/* Responsive Design for Grid */
+@media screen and (max-width: 768px) {
+    .posts__wrapper {
+        grid-template-columns: 1fr; /* Single column for smaller screens */
+    }
+}
+
+
+.post__info p {
+    color: var(--color-gray-300);
+    font-size: 1rem;
+}
+
+/* Sidebar Section */
+.sidebar__wrapper {
+    flex: 1; /* Occupy 1/3 of the space */
+    display: flex;
+    flex-direction: column;
+    gap: 2rem; /* Add spacing between categories and trending posts */
+}
+
+/* Categories */
+.categories__wrapper {
+    background: var(--color-gray-900);
+    padding: 1rem;
+    border-radius: var(--card-border-radius-2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.category__buttons-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.category__button {
+    background: var(--color-gray-700);
+    color: var(--color-white);
+    padding: 0.5rem 1rem;
+    border-radius: var(--card-border-radius-2);
+    font-size: 1rem;
+    text-align: center;
+    transition: var(--transition);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.category__button:hover {
+    background: var(--color-primary-light);
+    color: var(--color-black);
+}
+
+/* Trending Posts */
+.trending__wrapper {
+    background: var(--color-gray-900);
+    padding: 1rem;
+    border-radius: var(--card-border-radius-2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.trending__posts {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.trending__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: var(--card-border-radius-2);
+    background: var(--color-gray-700);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: var(--transition);
+}
+
+.trending__item:hover {
+    background: var(--color-gray-500);
+}
+
+.trending__item h4 {
+    font-size: 1rem;
+    color: var(--color-primary);
+}
+
+.trending__item small {
+    font-size: 0.9rem;
+    color: var(--color-gray-300);
+}
+
+.trending__info .likes {
+    color: var(--color-danger); /* Red color from the palette */
+    font-weight: bold;
+    display: inline-block;
+}
+
+.trending__info .likes i {
+    margin-right: 5px;
+    color: var(--color-danger); /* Match the heart icon with the text */
+}
+
+
+/* Section Headers */
+.section-title {
+    font-size: 1.8rem;
+    color: var(--color-primary);
+}
+
+.underline {
+    width: 100px;
+    height: 3px;
+    background: var(--color-primary);
+    margin: 0.5rem 0 1rem;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .main-content__container {
+        flex-direction: column;
+    }
+
+    .posts__wrapper,
+    .sidebar__wrapper {
+        width: 100%;
+    }
+}
