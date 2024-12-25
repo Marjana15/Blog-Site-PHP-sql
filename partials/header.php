@@ -28,6 +28,7 @@ if ($categoriesResult) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ContentConnect</title>
+        <link rel="shortcut icon" href="https://t3.ftcdn.net/jpg/03/47/53/38/360_F_347533897_K39mGJqveEng84SEgJpBbOQWsavLbXAm.jpg" type="image/x-icon">
 
     <!-- CUSTOM STYLESHEET -->
     <link rel="stylesheet" href="<?= ROOT_URL ?>css/style.css">
