@@ -36,8 +36,6 @@ A fully-featured blog site with robust functionality for both users and administ
 ![Dashboard Overview](https://i.postimg.cc/8Chs9rmC/image.png)
 
 ## Live Link - http://blog-is.great-site.net/
-## Usage
-
 ### User Workflow:
 1. Register/Login to access the blog site.
 2. Create posts and organize them into categories.
