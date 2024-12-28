@@ -49,5 +49,5 @@ A fully-featured blog site with robust functionality for both users and administ
 ---
 
 ## License
-
+Project is done by Marjana Begum ID 221-134-020 and Moumita Das Mou ID 221-134-017
 This project is licensed under the MIT License. See the LICENSE file for details.
