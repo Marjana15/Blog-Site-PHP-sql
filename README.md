@@ -53,4 +53,3 @@ Project is done by
 Marjana Begum ID 221-134-020 and 
 Moumita Das Mou ID 221-134-017
 
-This project is licensed under the MIT License. See the LICENSE file for details.
